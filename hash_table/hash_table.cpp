@@ -1,20 +1,103 @@
-﻿// hash_table.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
+﻿// hash_table
+
 
 #include <iostream>
 
-int main()
+using namespace std;
+
+class HashTable {
+private:
+
+	int capacity;
+	int** table;
+
+	int const_c, const_d;
+
+public:
+
+	HashTable();
+	HashTable(int capacity);
+	int hashFunction(int key);
+	void insertItem(int key, int data);
+
+	int getPrime(int value);
+	bool checkPrime(int value);
+
+};
+
+HashTable::HashTable()
 {
-    std::cout << "Hello World!\n";
+	int size = this->capacity = 1;
+	table = new int* [size];
+
+	for (int i = 0; i < this->capacity; i++) {
+		table[i] = nullptr;
+	}
 }
 
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
+HashTable::HashTable(int capacity)
+{
+	int size = getPrime(capacity);
+	this->capacity = size;
+	table = new int* [size];
 
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
+	for (int i = 0; i < this->capacity; i++) {
+		table[i] = nullptr;
+	}
+}
+
+int HashTable::hashFunction(int key)
+{
+	int hash_value, final_value, i = 1;
+
+	hash_value = key % capacity;
+	final_value = hash_value;
+
+	while (table[final_value] != nullptr) {
+		final_value = (hash_value + const_c * i + const_d * i * i) % this->capacity;
+		i++;
+	}
+
+	return final_value;
+}
+
+void HashTable::insertItem(int key, int data)
+{
+	int index = hashFunction(key);
+	table[index][0] = data;
+}
+
+int HashTable::getPrime(int value)
+{
+	if (value <= 1)
+		return false;
+
+	if (value % 2 == 0)
+		value++;
+
+	while (!checkPrime(value))
+		value += 2;
+
+	return value;
+}
+
+bool HashTable::checkPrime(int value)
+{
+	if (value <= 1)
+		return false;
+
+	for (int i = 2; i < value; i++)
+		if (value % i == 0)
+			return false;
+
+	return true;
+}
+
+int main() {
+
+
+
+	return 0;
+
+}
+
