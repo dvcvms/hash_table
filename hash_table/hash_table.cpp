@@ -21,15 +21,16 @@ public:
 	~HashTable();
 
 	void insertItem(int key, int data);
+	void deleteItem(int key);
 	void displayHash();
 
 private:
 
-	int hashFunction(int key);
+	int hashFunction(int key, int selector);
 	void checkSize();
 	void increaseTableSize(int new_capacity);
 
-	void setCapacity();
+	void setCapacity(int key);
 	int getPrime(int value);
 	bool checkPrime(int value);
 	void set_constant_values();
@@ -60,16 +61,18 @@ HashTable::HashTable(int capacity)
 	set_constant_values();
 }
 
-int HashTable::hashFunction(int key)
+int HashTable::hashFunction(int key, int selector)
 {
 	int hash_value, final_value, i = 1;
 
 	hash_value = key % capacity;
 	final_value = hash_value;
 
-	while (table[final_value] != nullptr) {
-		final_value = (hash_value + const_c * i + const_d * i * i) % this->capacity;
-		i++;
+	if (selector == 1) {
+		while (table[final_value] != nullptr) {
+			final_value = (hash_value + const_c * i + const_d * i * i) % this->capacity;
+			i++;
+		}
 	}
 
 	return final_value;
@@ -79,7 +82,7 @@ void HashTable::insertItem(int key, int data)
 {
 	this->fullness++;
 	checkSize();
-	int index = hashFunction(key);
+	int index = hashFunction(key, 1);
 	table[index] = new int(data);
 }
 
@@ -122,12 +125,21 @@ void HashTable::checkSize()
 {
 	double fraction = ((double) this->fullness / this->capacity) * 100;
 
+
 	if (fraction > 75)
-		setCapacity();
+		setCapacity(this->capacity);
+	
+	if (fraction < 25 && fullness > 15)
+		setCapacity(this->fullness);
+
+
+
+	
 }
 
 void HashTable::increaseTableSize(int new_capacity)
 {
+	//int new_index;
 	int** new_table;
 	new_table = new int* [new_capacity];
 	
@@ -136,17 +148,19 @@ void HashTable::increaseTableSize(int new_capacity)
 
 	for (int i = 0; i < this->capacity; i++)
 		if (this->table[i] != nullptr) {
+			//new_index = hashFunction(i);
 			//cout << this->table[i] << endl;
 			//cout << this->table[i][0];
+			
 			new_table[i] = this->table[i];
 		}
 
 	this->table = new_table;
 }
 
-void HashTable::setCapacity()
+void HashTable::setCapacity(int key)
 {
-	int new_capacity = getPrime(this->capacity);
+	int new_capacity = getPrime(key);
 	increaseTableSize(new_capacity);
 	this->capacity = new_capacity;
 	set_constant_values();
@@ -165,6 +179,20 @@ void HashTable::displayHash()
 		
 		cout << endl;
 	}
+}
+
+void HashTable::deleteItem(int key) 
+{
+	int index = hashFunction(key, 0);
+
+	if (this->table[index] != nullptr)
+	{
+		delete this->table[index];
+		this->table[index] = nullptr;
+	}
+
+	this->fullness--;
+	checkSize();
 }
 
 HashTable::~HashTable() 
@@ -198,6 +226,12 @@ int main()
 	
 	cout << endl << endl;
 	
+	ht.displayHash();
+
+	ht.deleteItem(7890123);
+
+	cout << endl << endl;
+
 	ht.displayHash();
 
 	return 0;
