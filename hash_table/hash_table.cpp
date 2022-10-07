@@ -18,19 +18,21 @@ public:
 
 	HashTable();
 	HashTable(int capacity);
-	int hashFunction(int key);
+	~HashTable();
+
 	void insertItem(int key, int data);
-	void checkSize();
-
-	int getPrime(int value);
-	bool checkPrime(int value);
-	void set_constant_values();
-
 	void displayHash();
 
 private:
-	void setCapacity();
 
+	int hashFunction(int key);
+	void checkSize();
+	void increaseTableSize(int new_capacity);
+
+	void setCapacity();
+	int getPrime(int value);
+	bool checkPrime(int value);
+	void set_constant_values();
 };
 
 HashTable::HashTable()
@@ -103,7 +105,7 @@ bool HashTable::checkPrime(int value)
 	if (value <= 1)
 		return false;
 
-	for (int i = 2; i < value; i++)
+	for (int i = 2; i <= round(sqrt(value)); i++)
 		if (value % i == 0)
 			return false;
 
@@ -118,16 +120,34 @@ void HashTable::set_constant_values()
 
 void HashTable::checkSize()
 {
-	double fraction = (this->fullness / this->capacity) * 100;
-	
+	double fraction = ((double) this->fullness / this->capacity) * 100;
+
 	if (fraction > 75)
 		setCapacity();
+}
 
+void HashTable::increaseTableSize(int new_capacity)
+{
+	int** new_table;
+	new_table = new int* [new_capacity];
+	
+	for (int i = 0; i < new_capacity; i++)
+		new_table[i] = nullptr;
+
+	for (int i = 0; i < this->capacity; i++)
+		if (this->table[i] != nullptr) {
+			//cout << this->table[i] << endl;
+			//cout << this->table[i][0];
+			new_table[i] = this->table[i];
+		}
+
+	this->table = new_table;
 }
 
 void HashTable::setCapacity()
 {
 	int new_capacity = getPrime(this->capacity);
+	increaseTableSize(new_capacity);
 	this->capacity = new_capacity;
 	set_constant_values();
 }
@@ -137,10 +157,25 @@ void HashTable::displayHash()
 	for (int i = 0; i < this->capacity; i++) 
 	{
 		cout << "table[" << i << "]";
-		cout << "-->" << this->table[i][0];
+		
+		if (this->table[i] != nullptr)
+			cout << "-->" << this->table[i][0];
+		else
+			cout << "-->null";
+		
 		cout << endl;
 	}
 }
+
+HashTable::~HashTable() 
+{
+	for (int i = 0; i < this->capacity; i++)
+		delete this->table[i];
+
+	delete this->table;
+
+}
+
 
 int main() 
 {
@@ -160,7 +195,9 @@ int main()
 	ht.insertItem(123, 444);
 	ht.insertItem(124, 555);
 	ht.insertItem(125, 666);
-
+	
+	cout << endl << endl;
+	
 	ht.displayHash();
 
 	return 0;
